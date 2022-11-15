@@ -83,7 +83,7 @@ var _ = Describe("Service Account Tests", func() {
 				serviceAccountName := "argocd-manager"
 				serviceAccountNamespace := "kube-system"
 
-				sa, err := getOrCreateServiceAccount(ctx, k8sClient, serviceAccountName, serviceAccountNamespace, log)
+				sa, err := GetOrCreateServiceAccount(ctx, k8sClient, serviceAccountName, serviceAccountNamespace, log)
 				Expect(err).To(BeNil())
 				Expect(sa).ToNot(BeNil())
 				Expect(sa.Name).ToNot(BeEmpty())
@@ -105,14 +105,14 @@ var _ = Describe("Service Account Tests", func() {
 
 		When("Invalid name", func() {
 			It("Should return an error if the service account name is empty", func() {
-				_, err := getOrCreateServiceAccount(ctx, k8sClient, "", "kube-system", log)
+				_, err := GetOrCreateServiceAccount(ctx, k8sClient, "", "kube-system", log)
 				Expect(err).ToNot(BeNil())
 			})
 		})
 
 		When("Invalid namespace", func() {
 			It("Should return an error if the service account namespace is invalid", func() {
-				_, err := getOrCreateServiceAccount(ctx, k8sClient, "argocd-manager", "invalid", log)
+				_, err := GetOrCreateServiceAccount(ctx, k8sClient, "argocd-manager", "invalid", log)
 				Expect(err).ToNot(BeNil())
 			})
 		})
@@ -143,7 +143,7 @@ var _ = Describe("Service Account Tests", func() {
 					serviceAccountName = ArgoCDManagerServiceAccountPrefix + "my-uuid"
 					serviceAccountNS   = "kube-system"
 				)
-				sa, err := getOrCreateServiceAccount(ctx, k8sClient, serviceAccountName, serviceAccountNS, log)
+				sa, err := GetOrCreateServiceAccount(ctx, k8sClient, serviceAccountName, serviceAccountNS, log)
 				Expect(err).To(BeNil())
 
 				secret, err := getServiceAccountTokenSecret(ctx, k8sClient, sa)
@@ -160,7 +160,7 @@ var _ = Describe("Service Account Tests", func() {
 					Expect(err).To(BeNil())
 					Expect(clientObj).ToNot(BeNil())
 
-					sa, err = getOrCreateServiceAccount(ctx, k8sClient, sa.Name, sa.Namespace, log)
+					sa, err = GetOrCreateServiceAccount(ctx, k8sClient, sa.Name, sa.Namespace, log)
 					Expect(err).To(BeNil())
 
 					secret, err := getServiceAccountTokenSecret(ctx, k8sClient, sa)

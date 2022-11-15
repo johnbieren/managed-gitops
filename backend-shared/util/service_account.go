@@ -33,7 +33,7 @@ var (
 	}
 )
 
-func getOrCreateServiceAccount(ctx context.Context, k8sClient client.Client, serviceAccountName string, serviceAccountNS string,
+func GetOrCreateServiceAccount(ctx context.Context, k8sClient client.Client, serviceAccountName string, serviceAccountNS string,
 	log logr.Logger) (*corev1.ServiceAccount, error) {
 
 	serviceAccount := &corev1.ServiceAccount{
@@ -74,12 +74,12 @@ func InstallServiceAccount(ctx context.Context, k8sClient client.Client, uuid st
 
 	serviceAccountName := GenerateServiceAccountName(uuid)
 
-	sa, err := getOrCreateServiceAccount(ctx, k8sClient, serviceAccountName, serviceAccountNS, log)
+	sa, err := GetOrCreateServiceAccount(ctx, k8sClient, serviceAccountName, serviceAccountNS, log)
 	if err != nil {
 		return "", nil, fmt.Errorf("unable to create or update service account: %v", serviceAccountName)
 	}
 
-	if err := createOrUpdateClusterRoleAndRoleBinding(ctx, uuid, k8sClient, serviceAccountName, serviceAccountNS, log); err != nil {
+	if err := CreateOrUpdateClusterRoleAndRoleBinding(ctx, uuid, k8sClient, serviceAccountName, serviceAccountNS, log); err != nil {
 		return "", nil, fmt.Errorf("unable to create or update role and cluster role binding: %v", err)
 	}
 
@@ -96,7 +96,7 @@ func InstallServiceAccount(ctx context.Context, k8sClient client.Client, uuid st
 func getOrCreateServiceAccountBearerToken(ctx context.Context, k8sClient client.Client, serviceAccountName string,
 	serviceAccountNS string, log logr.Logger) (string, error) {
 
-	tokenSecret, err := createServiceAccountTokenSecret(ctx, k8sClient, serviceAccountName, serviceAccountNS, log)
+	tokenSecret, err := CreateServiceAccountTokenSecret(ctx, k8sClient, serviceAccountName, serviceAccountNS, log)
 	if err != nil {
 		return "", fmt.Errorf("failed to create a token secret for service account %s: %w", serviceAccountName, err)
 	}
@@ -141,7 +141,7 @@ func getServiceAccountTokenSecret(ctx context.Context, k8sClient client.Client, 
 	return nil, nil
 }
 
-func createServiceAccountTokenSecret(ctx context.Context, k8sClient client.Client, serviceAccountName, serviceAccountNS string,
+func CreateServiceAccountTokenSecret(ctx context.Context, k8sClient client.Client, serviceAccountName, serviceAccountNS string,
 	log logr.Logger) (*corev1.Secret, error) {
 
 	tokenSecret := &corev1.Secret{
@@ -166,7 +166,7 @@ func createServiceAccountTokenSecret(ctx context.Context, k8sClient client.Clien
 	return tokenSecret, nil
 }
 
-func createOrUpdateClusterRoleAndRoleBinding(ctx context.Context, uuid string, k8sClient client.Client,
+func CreateOrUpdateClusterRoleAndRoleBinding(ctx context.Context, uuid string, k8sClient client.Client,
 	serviceAccountName string, serviceAccountNamespace string, log logr.Logger) error {
 
 	clusterRole := &rbacv1.ClusterRole{

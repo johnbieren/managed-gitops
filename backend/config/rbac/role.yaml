@@ -7,6 +7,20 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - apis.kcp.dev
+  resources:
+  - apiexports
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apis.kcp.dev
+  resources:
+  - apiexports/content
+  verbs:
+  - '*'
+- apiGroups:
   - managed-gitops.redhat.com
   resources:
   - gitopsdeploymentmanagedenvironments
@@ -106,6 +120,32 @@ rules:
   - managed-gitops.redhat.com
   resources:
   - gitopsdeploymentsyncruns/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - tenancy.kcp.dev
+  resources:
+  - clusterworkspaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tenancy.kcp.dev
+  resources:
+  - clusterworkspaces/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - tenancy.kcp.dev
+  resources:
+  - clusterworkspaces/status
   verbs:
   - get
   - patch

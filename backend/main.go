@@ -34,21 +34,22 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"github.com/go-logr/logr"
-	"github.com/redhat-appstudio/managed-gitops/utilities/db-migration/migrate"
+	//"github.com/redhat-appstudio/managed-gitops/utilities/db-migration/migrate"
 
 	sharedutil "github.com/redhat-appstudio/managed-gitops/backend-shared/util"
 
+	tenancyv1alpha1 "github.com/kcp-dev/kcp/pkg/apis/tenancy/v1alpha1"
 	managedgitopsv1alpha1 "github.com/redhat-appstudio/managed-gitops/backend-shared/apis/managed-gitops/v1alpha1"
 	"github.com/redhat-appstudio/managed-gitops/backend-shared/config/db"
 	dbutil "github.com/redhat-appstudio/managed-gitops/backend-shared/config/db/util"
-	managedgitopscontrollers "github.com/redhat-appstudio/managed-gitops/backend/controllers/managed-gitops"
-	"github.com/redhat-appstudio/managed-gitops/backend/eventloop/preprocess_event_loop"
+	tenancykcpdevcontrollers "github.com/redhat-appstudio/managed-gitops/backend/controllers/tenancy.kcp.dev"
 	"github.com/redhat-appstudio/managed-gitops/backend/routes"
 	//+kubebuilder:scaffold:imports
 )
@@ -62,6 +63,11 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(managedgitopsv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(tenancyv1alpha1.AddToScheme(scheme))
+	klog.InitFlags(flag.CommandLine)
+	if err := flag.Lookup("v").Value.Set("6"); err != nil {
+		panic(err)
+	}
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -87,19 +93,19 @@ func main() {
 	ctx := ctrl.SetupSignalHandler()
 
 	// Default to the backend running from backend folder
-	migrationsPath := "file://../utilities/db-migration/migrations/"
+	//migrationsPath := "file://../utilities/db-migration/migrations/"
 
 	// If the /migrations path exists, when the backend is running in a container, use that instead.
-	_, err := os.Stat("/migrations")
-	if !os.IsNotExist(err) {
-		migrationsPath = "file:///migrations"
-	}
+	//_, err := os.Stat("/migrations")
+	//if !os.IsNotExist(err) {
+	//	migrationsPath = "file:///migrations"
+	//}
 
-	if err := migrate.Migrate("", migrationsPath); err != nil {
-		setupLog.Error(err, "Fatal Error: Unsuccessful Migration")
-		os.Exit(1)
-	}
-	go initializeRoutes()
+	//if err := migrate.Migrate("", migrationsPath); err != nil {
+	//	setupLog.Error(err, "Fatal Error: Unsuccessful Migration")
+	//	os.Exit(1)
+	//}
+	//go initializeRoutes()
 
 	restConfig, err := sharedutil.GetRESTConfig()
 	if err != nil {
@@ -124,9 +130,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	preprocessEventLoop := preprocess_event_loop.NewPreprocessEventLoop()
+	//preprocessEventLoop := preprocess_event_loop.NewPreprocessEventLoop()
 
-	if err = (&managedgitopscontrollers.GitOpsDeploymentReconciler{
+	/*if err = (&managedgitopscontrollers.GitOpsDeploymentReconciler{
 		PreprocessEventLoop: preprocessEventLoop,
 		Client:              mgr.GetClient(),
 		Scheme:              mgr.GetScheme(),
@@ -156,6 +162,13 @@ func main() {
 		PreprocessEventLoopProcessor: managedgitopscontrollers.NewDefaultPreProcessEventLoopProcessor(preprocessEventLoop),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "GitOpsDeploymentManagedEnvironment")
+		os.Exit(1)
+	}*/
+	if err = (&tenancykcpdevcontrollers.ClusterWorkspaceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ClusterWorkspace")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

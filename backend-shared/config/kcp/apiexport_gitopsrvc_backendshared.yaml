@@ -11,6 +11,8 @@ spec:
     resource: "secrets"
   - group: ""
     resource: "namespaces"
+  - group: tenancy.kcp.dev
+    resource: "clusterworkspaces"
   latestResourceSchemas:
     - v202208100611.gitopsdeploymentmanagedenvironments.managed-gitops.redhat.com
     - v202208100611.gitopsdeploymentrepositorycredentials.managed-gitops.redhat.com
